@@ -16,6 +16,12 @@ namespace STI_Tool
 {
     public partial class STI : Form
     {
+        int blobCounter = 1;
+
+        bool diameter90Deg = true;
+
+        bool linesFilter = false;
+
         string configPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "\\STI-Tool\\";
         string csvFilePath = "data.csv";
 
@@ -112,8 +118,8 @@ namespace STI_Tool
 
             if (units == "mm")
             {
-                initMaxDiameter = 152.4 / euFactor; //130mm
-                initMinDiameter = 127 / euFactor; //110mm
+                initMaxDiameter = 165.1 / euFactor; //130mm
+                initMinDiameter = 139.7 / euFactor; //110mm
             }
             else
             {
@@ -132,7 +138,6 @@ namespace STI_Tool
             pbROI.SendToBack();
 
             InitControls();
-            this.csvFilePath = csvFilePath;
         }
 
         private void InitCSV()
@@ -143,18 +148,20 @@ namespace STI_Tool
                 // Crea un nuevo archivo y escribe los encabezados
                 using (StreamWriter sw = new StreamWriter(configPath + csvFilePath, false))
                 {
-                    sw.WriteLine("ID,Class,Compacity,Max Diameter,Min Diameter, Avg Diameter"); // Escribe los encabezados
+                    sw.WriteLine("ID,Number,Class,Compacity,Ovality,Max Diameter,Min Diameter 90°,Real Min Diameter,Avg Diameter"); // Escribe los encabezados
                 }
             }
         }
 
-        private void AddLineToCsv(string ID, string Class,string compactness,string maxDiameter, string minDiameter, string avgDiameter)
+        private void AddLineToCsv(string ID, string Class,string compactness,string maxDiameter, string minDiameter, string avgDiameter, string ovality)
         {
             // Agrega una nueva línea al archivo CSV
             using (StreamWriter sw = new StreamWriter(configPath + csvFilePath, true))
             {
-                sw.WriteLine($"{ID},{Class},{compactness},{maxDiameter},{minDiameter},{avgDiameter}");
+                sw.WriteLine($"{blobCounter},{ID},,{compactness},{ovality},{maxDiameter},{minDiameter},{avgDiameter}");
             }
+
+            blobCounter++;
         }
 
         private void InitDataTable()
@@ -262,6 +269,24 @@ namespace STI_Tool
             {
                 btnAutoThreshold.BackColor = Color.Silver;
                 btnManualThreshold.BackColor = Color.LightGreen;
+            }
+
+            if (linesFilter)
+            {
+                btnLinesFilter.BackColor = Color.LightGreen;
+            }
+            else
+            {
+                btnLinesFilter.BackColor = Color.Silver;
+            }
+
+            if (diameter90Deg)
+            {
+                btnDiameters90Deg.BackColor = Color.LightGreen;
+            }
+            else
+            {
+                btnDiameters90Deg.BackColor = Color.Silver;
             }
 
             btnProcess.Enabled = false;
@@ -458,6 +483,16 @@ namespace STI_Tool
                 {
                     MessageBox.Show("Use a image with the correct color format");
                     return;
+                    //Cargar la imagen original
+                    //Mat originalImage2 = CvInvoke.Imread(actualImagePath, ImreadModes.Color);
+
+                    //// Convertir la imagen a escala de grises
+                    //Mat grayImage = new Mat();
+                    //CvInvoke.CvtColor(originalImage2, grayImage, ColorConversion.Bgr2Gray);
+
+                    //// Guardar la imagen en 8 bpp
+                    //CvInvoke.Imwrite("0_1.jpg", grayImage);
+                    //return;
                 }
 
 
@@ -724,8 +759,46 @@ namespace STI_Tool
                 return;
             }
 
-            // Se extrae el ROI de la imagen binarizada
-            Mat roiImage = ExtractROI(binarizedImage);
+            Mat roiImage = new Mat();
+
+            if (linesFilter)
+            {
+                int div = 120;
+
+                Mat hori = binarizedImage.Clone();
+
+                
+
+                // Especificar tamaño en el eje horizontal
+                int rows = hori.Rows;
+                int verticalSize = rows / div;
+
+                // Crear elemento estructural para extraer líneas horizontales a través de operaciones morfológicas
+                Mat verticalStructure = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(1, verticalSize), new Point(-1, -1));
+
+                // Aplicar operaciones morfológicas
+                CvInvoke.Erode(hori, hori, verticalStructure, new Point(-1, -1), 1, BorderType.Default, new MCvScalar());
+                CvInvoke.Dilate(hori, hori, verticalStructure, new Point(-1, -1), 1, BorderType.Default, new MCvScalar());
+
+                // Especificar tamaño en el eje horizontal
+                int cols = hori.Cols;
+                int horizontalSize = cols / div;
+
+                // Crear elemento estructural para extraer líneas horizontales a través de operaciones morfológicas
+                Mat horizontalStructure = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(horizontalSize, 1), new Point(-1, -1));
+
+                // Aplicar operaciones morfológicas
+                CvInvoke.Erode(hori, hori, horizontalStructure, new Point(-1, -1), 1, BorderType.Default, new MCvScalar());
+                CvInvoke.Dilate(hori, hori, horizontalStructure, new Point(-1, -1), 1, BorderType.Default, new MCvScalar());
+
+                // Se extrae el ROI de la imagen binarizada
+                roiImage = ExtractROI(hori);
+            }
+            else
+            {
+                // Se extrae el ROI de la imagen binarizada
+                roiImage = ExtractROI(binarizedImage);
+            }
 
             // Colocamos el picturebox del ROI
             SetPictureBoxPositionAndSize();
@@ -769,6 +842,7 @@ namespace STI_Tool
             for (int i = 0; i < areas.Count; i++)
             {
                 if (!IsTouchingEdges(contours[i]))
+                //if (true)
                 {
                     int sector = sec;
                     
@@ -802,7 +876,7 @@ namespace STI_Tool
 
                     Blob blob = new Blob((double)area, perimeter, contours[i], diameterTriangles, diametroIA, centro, maxDiameter, minDiameter, sector, compactness, size, ovalidad, hole);
 
-                    AddLineToCsv((blob.Sector).ToString(), sizes[size],compactness.ToString(),(blob.DMayor*euFactor).ToString(),(blob.DMenor * euFactor).ToString(),(blob.Diametro * euFactor).ToString());
+                    AddLineToCsv((blob.Sector).ToString(), sizes[size], compactness.ToString(), ((blob.DMayor * euFactor)/25.4).ToString(), ((blob.DMenor * euFactor)/25.4).ToString(), ((blob.Diametro * euFactor)/25.4).ToString(),blob.Ovalidad.ToString());
 
                     if (size != 6) // Shape
                     {
@@ -1184,8 +1258,8 @@ namespace STI_Tool
 
             maxDiameter = 0; minDiameter = 0;
 
-            int[] deltaX = { 1, 4, 2, 1, 1, 1, 0, -1, -1, -1, -2, -4, -1, -4, -2, -1, -1, -1, 0, 1, 1, 1, 2, 4 };
-            int[] deltaY = { 0, 1, 1, 1, 2, 4, 1, 4, 2, 1, 1, 1, 0, -1, -1, -1, -2, -4, -1, -4, -2, -1, -1, -1 };
+            int[] deltaX = { 1, 4, 2, 1, 1, 1, 0, -1, -1, -1, -2, -4, -1, -4, -2, -1, -1, -1,  0,  1,  1,  1,  2,  4 };
+            int[] deltaY = { 0, 1, 1, 1, 2, 4, 1,  4,  2,  1,  1,  1,  0, -1, -1, -1, -2, -4, -1, -4, -2, -1, -1, -1 };
 
             int[] correction = { 0, -2, -1, 0, -1, -2, 0, -2, -1, 0, -1, -2, 0, -2, -1, 0, -1, -2, 0, -2, -1, 0, -1, -2 };
 
@@ -1223,13 +1297,6 @@ namespace STI_Tool
 
                     pixelColor = image.GetPixel(newX, newY);
 
-                    //if (pixelColor.GetBrightness() == 0)
-                    //{
-                    //    newX -= (int)(deltaX[i] / 2);
-                    //    newY -= (int)(deltaY[i] / 2);
-                    //    break;
-                    //}
-
                     if (iteration >= maxIteration)
                     {
                         iteration = 0;
@@ -1261,29 +1328,61 @@ namespace STI_Tool
             maxDiameter = diameters.Max();
             minDiameter = diameters.Min();
 
-
             if (draw)
             {
-                int maxIndex = diameters.IndexOf(maxDiameter);
-                int minIndex = diameters.IndexOf(minDiameter);
-
-                // CvInvoke.Line(image,new Point(center.X, center.Y), listXY[maxIndex],new MCvScalar(2552,255,0));
-
-                using (Graphics g = Graphics.FromImage(image))
+                if (diameter90Deg)
                 {
-                    Pen pen1 = new Pen(Color.Green, 2);
-                    Pen pen2 = new Pen(Color.Red, 2);
+                    int maxIndex = diameters.IndexOf(maxDiameter);
+                    int minIndex;
+                    if (maxIndex >= 6)
+                    {
+                        minIndex = maxIndex - 6;
+                    }
+                    else
+                    {
+                        minIndex = maxIndex + 6;
+                    }
 
-                    // Dibujar diámetro máximo
-                    g.DrawLine(pen1, new Point(center.X, center.Y), listXY[maxIndex]);
-                    g.DrawLine(pen1, new Point(center.X, center.Y), listXY[maxIndex + 12]);
+                    using (Graphics g = Graphics.FromImage(image))
+                    {
+                        Pen pen1 = new Pen(Color.Green, 2);
+                        Pen pen2 = new Pen(Color.Red, 2);
 
-                    // Dibujar diámetro minimo
-                    g.DrawLine(pen2, new Point(center.X, center.Y), listXY[minIndex]);
-                    g.DrawLine(pen2, new Point(center.X, center.Y), listXY[minIndex + 12]);
+                        // Dibujar diámetro máximo
+                        g.DrawLine(pen1, new Point(center.X, center.Y), listXY[maxIndex]);
+                        g.DrawLine(pen1, new Point(center.X, center.Y), listXY[maxIndex + 12]);
+
+                        // Dibujar diámetro minimo
+                        g.DrawLine(pen2, new Point(center.X, center.Y), listXY[minIndex]);
+                        g.DrawLine(pen2, new Point(center.X, center.Y), listXY[minIndex + 12]);
+                    }
+
+                    minDiameter = diameters[minIndex];
+                }
+                else
+                {
+                    int maxIndex = diameters.IndexOf(maxDiameter);
+                    int minIndex = diameters.IndexOf(minDiameter);
+                    
+
+                    using (Graphics g = Graphics.FromImage(image))
+                    {
+                        Pen pen1 = new Pen(Color.Green, 2);
+                        Pen pen2 = new Pen(Color.Red, 2);
+
+                        // Dibujar diámetro máximo
+                        g.DrawLine(pen1, new Point(center.X, center.Y), listXY[maxIndex]);
+                        g.DrawLine(pen1, new Point(center.X, center.Y), listXY[maxIndex + 12]);
+
+                        // Dibujar diámetro minimo
+                        g.DrawLine(pen2, new Point(center.X, center.Y), listXY[minIndex]);
+                        g.DrawLine(pen2, new Point(center.X, center.Y), listXY[minIndex + 12]);
+                    }
                 }
 
             }
+
+            
             return (diameter, maxDiameter, minDiameter);
         }
 
@@ -1341,18 +1440,18 @@ namespace STI_Tool
 
             // Coloreamos todos los pixeles de fondo
             Array array = jerarquia.GetData();
-            for (int i = 0; i < contours.Size; i++)
-            {
-                // Si el contorno tiene un contorno padre
-                int a = (int)array.GetValue(0, i, 3);
-                int area = (int)CvInvoke.ContourArea(contours[i]);
-                //MessageBox.Show(array.GetValue(0,i,3).ToString());
-                if (a != -1 && area > 0 && area < minArea)
-                {
-                    // Dibujar el contorno interno en verde
-                    CvInvoke.DrawContours(image, contours, i, new MCvScalar(255, 255, 0), -1);
-                }
-            }
+            //for (int i = 0; i < contours.Size; i++)
+            //{
+            //    // Si el contorno tiene un contorno padre
+            //    int a = (int)array.GetValue(0, i, 3);
+            //    int area = (int)CvInvoke.ContourArea(contours[i]);
+            //    //MessageBox.Show(array.GetValue(0,i,3).ToString());
+            //    if (a != -1 && area > 0 && area < minArea)
+            //    {
+            //        // Dibujar el contorno interno en verde
+            //        CvInvoke.DrawContours(image, contours, i, new MCvScalar(0, 255, 0), -1);
+            //    }
+            //}
 
             for (int i = 0; i < contours.Size; i++)
             {
@@ -1370,10 +1469,12 @@ namespace STI_Tool
                         do
                         {
                             // Acceder al contorno hijo en el vector de contornos
-                            VectorOfPoint contornoHijo = contours[indiceHijoActual];
+                            //VectorOfPoint contornoHijo = contours[indiceHijoActual];
+                            // Dibujar el contorno interno en verde
+                            CvInvoke.DrawContours(image, contours, indiceHijoActual, new MCvScalar(0, 255, 0), -1);
 
-                            area -= CvInvoke.ContourArea(contornoHijo);
-                            perimeter += CvInvoke.ArcLength(contornoHijo, true);
+                            //area -= CvInvoke.ContourArea(contornoHijo);
+                            //perimeter += CvInvoke.ArcLength(contornoHijo, true);
 
                             // Obtener el índice del siguiente hijo del contorno padre actual
                             indiceHijoActual = Convert.ToInt32(array.GetValue(0, indiceHijoActual, 0));
@@ -2100,6 +2201,32 @@ namespace STI_Tool
                 case "Black":
                     tortillaPolarity = 1;
                     break;
+            }
+        }
+
+        private void btnLinesFilter_Click(object sender, EventArgs e)
+        {
+            linesFilter = !linesFilter;
+            if (linesFilter)
+            {
+                btnLinesFilter.BackColor = Color.LightGreen;
+            }
+            else
+            {
+                btnLinesFilter.BackColor = Color.Silver;
+            }
+        }
+
+        private void btnDiameters90Deg_Click(object sender, EventArgs e)
+        {
+            diameter90Deg = !diameter90Deg;
+            if (diameter90Deg)
+            {
+                btnDiameters90Deg.BackColor = Color.LightGreen;
+            }
+            else
+            {
+                btnDiameters90Deg.BackColor = Color.Silver;
             }
         }
     }

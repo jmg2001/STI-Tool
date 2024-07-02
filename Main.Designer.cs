@@ -37,16 +37,6 @@
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             this.tabControl2 = new System.Windows.Forms.TabControl();
-            this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.txtImageSize = new System.Windows.Forms.TextBox();
-            this.label3 = new System.Windows.Forms.Label();
-            this.cmbActualImage = new System.Windows.Forms.ComboBox();
-            this.btnNextImage = new System.Windows.Forms.Button();
-            this.btnBackImage = new System.Windows.Forms.Button();
-            this.label2 = new System.Windows.Forms.Label();
-            this.label1 = new System.Windows.Forms.Label();
-            this.txtFolderPath = new System.Windows.Forms.TextBox();
-            this.btnOpenFolder = new System.Windows.Forms.Button();
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.groupBox7 = new System.Windows.Forms.GroupBox();
             this.dplControlDiameter = new System.Windows.Forms.Button();
@@ -111,6 +101,8 @@
             this.label17 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.label10 = new System.Windows.Forms.Label();
+            this.cmbPolarity = new System.Windows.Forms.ComboBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.btnDrawRoi = new System.Windows.Forms.Button();
             this.btnImageCorrection = new System.Windows.Forms.Button();
@@ -125,8 +117,18 @@
             this.label4 = new System.Windows.Forms.Label();
             this.txtRoiHeight = new System.Windows.Forms.TextBox();
             this.txtRoiWidth = new System.Windows.Forms.TextBox();
-            this.cmbPolarity = new System.Windows.Forms.ComboBox();
-            this.label10 = new System.Windows.Forms.Label();
+            this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.txtImageSize = new System.Windows.Forms.TextBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.cmbActualImage = new System.Windows.Forms.ComboBox();
+            this.btnNextImage = new System.Windows.Forms.Button();
+            this.btnBackImage = new System.Windows.Forms.Button();
+            this.label2 = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
+            this.txtFolderPath = new System.Windows.Forms.TextBox();
+            this.btnOpenFolder = new System.Windows.Forms.Button();
+            this.btnLinesFilter = new System.Windows.Forms.Button();
+            this.btnDiameters90Deg = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.mainPage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbROI)).BeginInit();
@@ -134,7 +136,6 @@
             this.tablePage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.tabControl2.SuspendLayout();
-            this.tabPage1.SuspendLayout();
             this.tabPage3.SuspendLayout();
             this.groupBox7.SuspendLayout();
             this.groupBox12.SuspendLayout();
@@ -147,13 +148,14 @@
             this.groupBox1.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.groupBox2.SuspendLayout();
+            this.tabPage1.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
             // 
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1455, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(1451, 24);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -166,7 +168,7 @@
             this.tabControl1.Location = new System.Drawing.Point(0, 24);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(819, 731);
+            this.tabControl1.Size = new System.Drawing.Size(768, 731);
             this.tabControl1.TabIndex = 1;
             // 
             // mainPage
@@ -177,7 +179,7 @@
             this.mainPage.Location = new System.Drawing.Point(4, 41);
             this.mainPage.Name = "mainPage";
             this.mainPage.Padding = new System.Windows.Forms.Padding(3);
-            this.mainPage.Size = new System.Drawing.Size(811, 686);
+            this.mainPage.Size = new System.Drawing.Size(760, 686);
             this.mainPage.TabIndex = 0;
             this.mainPage.Text = "MAIN";
             // 
@@ -207,7 +209,7 @@
             this.tablePage.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.tablePage.Location = new System.Drawing.Point(4, 41);
             this.tablePage.Name = "tablePage";
-            this.tablePage.Size = new System.Drawing.Size(811, 686);
+            this.tablePage.Size = new System.Drawing.Size(760, 686);
             this.tablePage.TabIndex = 1;
             this.tablePage.Text = "TABLE";
             // 
@@ -217,7 +219,7 @@
             this.dataGridView1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGridView1.Location = new System.Drawing.Point(0, 0);
             this.dataGridView1.Name = "dataGridView1";
-            this.dataGridView1.Size = new System.Drawing.Size(811, 686);
+            this.dataGridView1.Size = new System.Drawing.Size(760, 686);
             this.dataGridView1.TabIndex = 0;
             // 
             // folderBrowserDialog1
@@ -226,124 +228,16 @@
             // 
             // tabControl2
             // 
-            this.tabControl2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.tabControl2.Controls.Add(this.tabPage3);
             this.tabControl2.Controls.Add(this.tabPage2);
             this.tabControl2.Controls.Add(this.tabPage1);
+            this.tabControl2.Dock = System.Windows.Forms.DockStyle.Right;
             this.tabControl2.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tabControl2.Location = new System.Drawing.Point(813, 27);
+            this.tabControl2.Location = new System.Drawing.Point(809, 24);
             this.tabControl2.Name = "tabControl2";
             this.tabControl2.SelectedIndex = 0;
-            this.tabControl2.Size = new System.Drawing.Size(642, 728);
+            this.tabControl2.Size = new System.Drawing.Size(642, 731);
             this.tabControl2.TabIndex = 2;
-            // 
-            // tabPage1
-            // 
-            this.tabPage1.BackColor = System.Drawing.Color.LightSteelBlue;
-            this.tabPage1.Controls.Add(this.txtImageSize);
-            this.tabPage1.Controls.Add(this.label3);
-            this.tabPage1.Controls.Add(this.cmbActualImage);
-            this.tabPage1.Controls.Add(this.btnNextImage);
-            this.tabPage1.Controls.Add(this.btnBackImage);
-            this.tabPage1.Controls.Add(this.label2);
-            this.tabPage1.Controls.Add(this.label1);
-            this.tabPage1.Controls.Add(this.txtFolderPath);
-            this.tabPage1.Controls.Add(this.btnOpenFolder);
-            this.tabPage1.Font = new System.Drawing.Font("Segoe UI", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tabPage1.Location = new System.Drawing.Point(4, 41);
-            this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(634, 683);
-            this.tabPage1.TabIndex = 0;
-            this.tabPage1.Text = "  SELECT  ";
-            // 
-            // txtImageSize
-            // 
-            this.txtImageSize.Enabled = false;
-            this.txtImageSize.Location = new System.Drawing.Point(115, 80);
-            this.txtImageSize.Name = "txtImageSize";
-            this.txtImageSize.Size = new System.Drawing.Size(278, 33);
-            this.txtImageSize.TabIndex = 9;
-            this.txtImageSize.Text = "@txtImageSize";
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label3.Location = new System.Drawing.Point(21, 86);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(88, 21);
-            this.label3.TabIndex = 8;
-            this.label3.Text = "Image Size:";
-            // 
-            // cmbActualImage
-            // 
-            this.cmbActualImage.FormattingEnabled = true;
-            this.cmbActualImage.Location = new System.Drawing.Point(115, 18);
-            this.cmbActualImage.Name = "cmbActualImage";
-            this.cmbActualImage.Size = new System.Drawing.Size(202, 33);
-            this.cmbActualImage.TabIndex = 7;
-            this.cmbActualImage.SelectedIndexChanged += new System.EventHandler(this.cmbActualImage_SelectedIndexChanged);
-            // 
-            // btnNextImage
-            // 
-            this.btnNextImage.Location = new System.Drawing.Point(499, 9);
-            this.btnNextImage.Name = "btnNextImage";
-            this.btnNextImage.Size = new System.Drawing.Size(115, 49);
-            this.btnNextImage.TabIndex = 6;
-            this.btnNextImage.Text = "Next";
-            this.btnNextImage.UseVisualStyleBackColor = true;
-            this.btnNextImage.Click += new System.EventHandler(this.btnNextImage_Click);
-            // 
-            // btnBackImage
-            // 
-            this.btnBackImage.Location = new System.Drawing.Point(361, 9);
-            this.btnBackImage.Name = "btnBackImage";
-            this.btnBackImage.Size = new System.Drawing.Size(115, 49);
-            this.btnBackImage.TabIndex = 5;
-            this.btnBackImage.Text = "Back";
-            this.btnBackImage.UseVisualStyleBackColor = true;
-            this.btnBackImage.Click += new System.EventHandler(this.btnBackImage_Click);
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(6, 24);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(103, 21);
-            this.label2.TabIndex = 3;
-            this.label2.Text = "Actual Image:";
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(21, 146);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(68, 42);
-            this.label1.TabIndex = 2;
-            this.label1.Text = "Selected\r\nFolder:";
-            // 
-            // txtFolderPath
-            // 
-            this.txtFolderPath.Enabled = false;
-            this.txtFolderPath.Location = new System.Drawing.Point(115, 128);
-            this.txtFolderPath.Multiline = true;
-            this.txtFolderPath.Name = "txtFolderPath";
-            this.txtFolderPath.Size = new System.Drawing.Size(487, 89);
-            this.txtFolderPath.TabIndex = 1;
-            this.txtFolderPath.Text = "@txtFolderPath";
-            // 
-            // btnOpenFolder
-            // 
-            this.btnOpenFolder.Location = new System.Drawing.Point(248, 223);
-            this.btnOpenFolder.Name = "btnOpenFolder";
-            this.btnOpenFolder.Size = new System.Drawing.Size(195, 47);
-            this.btnOpenFolder.TabIndex = 0;
-            this.btnOpenFolder.Text = "Open Folder";
-            this.btnOpenFolder.UseVisualStyleBackColor = true;
-            this.btnOpenFolder.Click += new System.EventHandler(this.btnOpenFolder_Click);
             // 
             // tabPage3
             // 
@@ -356,7 +250,7 @@
             this.tabPage3.Location = new System.Drawing.Point(4, 41);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(634, 683);
+            this.tabPage3.Size = new System.Drawing.Size(634, 686);
             this.tabPage3.TabIndex = 1;
             this.tabPage3.Text = "  PROCESS  ";
             // 
@@ -1084,6 +978,8 @@
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.btnDiameters90Deg);
+            this.groupBox3.Controls.Add(this.btnLinesFilter);
             this.groupBox3.Controls.Add(this.label10);
             this.groupBox3.Controls.Add(this.cmbPolarity);
             this.groupBox3.Location = new System.Drawing.Point(6, 150);
@@ -1092,6 +988,27 @@
             this.groupBox3.TabIndex = 3;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Process";
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(22, 38);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(141, 25);
+            this.label10.TabIndex = 1;
+            this.label10.Text = "Tortilla Polarity:";
+            // 
+            // cmbPolarity
+            // 
+            this.cmbPolarity.FormattingEnabled = true;
+            this.cmbPolarity.Items.AddRange(new object[] {
+            "White",
+            "Black"});
+            this.cmbPolarity.Location = new System.Drawing.Point(169, 35);
+            this.cmbPolarity.Name = "cmbPolarity";
+            this.cmbPolarity.Size = new System.Drawing.Size(121, 33);
+            this.cmbPolarity.TabIndex = 0;
+            this.cmbPolarity.SelectedIndexChanged += new System.EventHandler(this.cmbPolarity_SelectedIndexChanged);
             // 
             // groupBox2
             // 
@@ -1248,33 +1165,142 @@
             this.txtRoiWidth.Text = "@txtRoiWidth";
             this.txtRoiWidth.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
-            // cmbPolarity
+            // tabPage1
             // 
-            this.cmbPolarity.FormattingEnabled = true;
-            this.cmbPolarity.Items.AddRange(new object[] {
-            "White",
-            "Black"});
-            this.cmbPolarity.Location = new System.Drawing.Point(169, 35);
-            this.cmbPolarity.Name = "cmbPolarity";
-            this.cmbPolarity.Size = new System.Drawing.Size(121, 33);
-            this.cmbPolarity.TabIndex = 0;
-            this.cmbPolarity.SelectedIndexChanged += new System.EventHandler(this.cmbPolarity_SelectedIndexChanged);
+            this.tabPage1.BackColor = System.Drawing.Color.LightSteelBlue;
+            this.tabPage1.Controls.Add(this.txtImageSize);
+            this.tabPage1.Controls.Add(this.label3);
+            this.tabPage1.Controls.Add(this.cmbActualImage);
+            this.tabPage1.Controls.Add(this.btnNextImage);
+            this.tabPage1.Controls.Add(this.btnBackImage);
+            this.tabPage1.Controls.Add(this.label2);
+            this.tabPage1.Controls.Add(this.label1);
+            this.tabPage1.Controls.Add(this.txtFolderPath);
+            this.tabPage1.Controls.Add(this.btnOpenFolder);
+            this.tabPage1.Font = new System.Drawing.Font("Segoe UI", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tabPage1.Location = new System.Drawing.Point(4, 41);
+            this.tabPage1.Name = "tabPage1";
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage1.Size = new System.Drawing.Size(634, 683);
+            this.tabPage1.TabIndex = 0;
+            this.tabPage1.Text = "  SELECT  ";
             // 
-            // label10
+            // txtImageSize
             // 
-            this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(22, 38);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(141, 25);
-            this.label10.TabIndex = 1;
-            this.label10.Text = "Tortilla Polarity:";
+            this.txtImageSize.Enabled = false;
+            this.txtImageSize.Location = new System.Drawing.Point(115, 80);
+            this.txtImageSize.Name = "txtImageSize";
+            this.txtImageSize.Size = new System.Drawing.Size(278, 33);
+            this.txtImageSize.TabIndex = 9;
+            this.txtImageSize.Text = "@txtImageSize";
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label3.Location = new System.Drawing.Point(21, 86);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(88, 21);
+            this.label3.TabIndex = 8;
+            this.label3.Text = "Image Size:";
+            // 
+            // cmbActualImage
+            // 
+            this.cmbActualImage.FormattingEnabled = true;
+            this.cmbActualImage.Location = new System.Drawing.Point(115, 18);
+            this.cmbActualImage.Name = "cmbActualImage";
+            this.cmbActualImage.Size = new System.Drawing.Size(202, 33);
+            this.cmbActualImage.TabIndex = 7;
+            this.cmbActualImage.SelectedIndexChanged += new System.EventHandler(this.cmbActualImage_SelectedIndexChanged);
+            // 
+            // btnNextImage
+            // 
+            this.btnNextImage.Location = new System.Drawing.Point(499, 9);
+            this.btnNextImage.Name = "btnNextImage";
+            this.btnNextImage.Size = new System.Drawing.Size(115, 49);
+            this.btnNextImage.TabIndex = 6;
+            this.btnNextImage.Text = "Next";
+            this.btnNextImage.UseVisualStyleBackColor = true;
+            this.btnNextImage.Click += new System.EventHandler(this.btnNextImage_Click);
+            // 
+            // btnBackImage
+            // 
+            this.btnBackImage.Location = new System.Drawing.Point(361, 9);
+            this.btnBackImage.Name = "btnBackImage";
+            this.btnBackImage.Size = new System.Drawing.Size(115, 49);
+            this.btnBackImage.TabIndex = 5;
+            this.btnBackImage.Text = "Back";
+            this.btnBackImage.UseVisualStyleBackColor = true;
+            this.btnBackImage.Click += new System.EventHandler(this.btnBackImage_Click);
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label2.Location = new System.Drawing.Point(6, 24);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(103, 21);
+            this.label2.TabIndex = 3;
+            this.label2.Text = "Actual Image:";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.Location = new System.Drawing.Point(21, 146);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(68, 42);
+            this.label1.TabIndex = 2;
+            this.label1.Text = "Selected\r\nFolder:";
+            // 
+            // txtFolderPath
+            // 
+            this.txtFolderPath.Enabled = false;
+            this.txtFolderPath.Location = new System.Drawing.Point(115, 128);
+            this.txtFolderPath.Multiline = true;
+            this.txtFolderPath.Name = "txtFolderPath";
+            this.txtFolderPath.Size = new System.Drawing.Size(487, 89);
+            this.txtFolderPath.TabIndex = 1;
+            this.txtFolderPath.Text = "@txtFolderPath";
+            // 
+            // btnOpenFolder
+            // 
+            this.btnOpenFolder.Location = new System.Drawing.Point(248, 223);
+            this.btnOpenFolder.Name = "btnOpenFolder";
+            this.btnOpenFolder.Size = new System.Drawing.Size(195, 47);
+            this.btnOpenFolder.TabIndex = 0;
+            this.btnOpenFolder.Text = "Open Folder";
+            this.btnOpenFolder.UseVisualStyleBackColor = true;
+            this.btnOpenFolder.Click += new System.EventHandler(this.btnOpenFolder_Click);
+            // 
+            // btnLinesFilter
+            // 
+            this.btnLinesFilter.BackColor = System.Drawing.Color.Silver;
+            this.btnLinesFilter.Location = new System.Drawing.Point(308, 27);
+            this.btnLinesFilter.Name = "btnLinesFilter";
+            this.btnLinesFilter.Size = new System.Drawing.Size(134, 47);
+            this.btnLinesFilter.TabIndex = 2;
+            this.btnLinesFilter.Text = "Lines Filter";
+            this.btnLinesFilter.UseVisualStyleBackColor = false;
+            this.btnLinesFilter.Click += new System.EventHandler(this.btnLinesFilter_Click);
+            // 
+            // btnDiameters90Deg
+            // 
+            this.btnDiameters90Deg.BackColor = System.Drawing.Color.Silver;
+            this.btnDiameters90Deg.Location = new System.Drawing.Point(455, 27);
+            this.btnDiameters90Deg.Name = "btnDiameters90Deg";
+            this.btnDiameters90Deg.Size = new System.Drawing.Size(134, 47);
+            this.btnDiameters90Deg.TabIndex = 3;
+            this.btnDiameters90Deg.Text = "Dia. 90°";
+            this.btnDiameters90Deg.UseVisualStyleBackColor = false;
+            this.btnDiameters90Deg.Click += new System.EventHandler(this.btnDiameters90Deg_Click);
             // 
             // STI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.LightSteelBlue;
-            this.ClientSize = new System.Drawing.Size(1455, 755);
+            this.ClientSize = new System.Drawing.Size(1451, 755);
             this.Controls.Add(this.tabControl2);
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.menuStrip1);
@@ -1290,8 +1316,6 @@
             this.tablePage.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.tabControl2.ResumeLayout(false);
-            this.tabPage1.ResumeLayout(false);
-            this.tabPage1.PerformLayout();
             this.tabPage3.ResumeLayout(false);
             this.groupBox7.ResumeLayout(false);
             this.groupBox7.PerformLayout();
@@ -1312,6 +1336,8 @@
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
             this.groupBox2.ResumeLayout(false);
+            this.tabPage1.ResumeLayout(false);
+            this.tabPage1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1418,6 +1444,8 @@
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.ComboBox cmbPolarity;
+        private System.Windows.Forms.Button btnLinesFilter;
+        private System.Windows.Forms.Button btnDiameters90Deg;
     }
 }
 
