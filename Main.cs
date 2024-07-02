@@ -20,7 +20,7 @@ namespace STI_Tool
 
         bool diameter90Deg = true;
 
-        bool linesFilter = false;
+        bool linesFilter = true;
 
         string configPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "\\STI-Tool\\";
         string csvFilePath = "data.csv";
@@ -763,11 +763,20 @@ namespace STI_Tool
 
             if (linesFilter)
             {
-                int div = 120;
+                int div = 130;
 
                 Mat hori = binarizedImage.Clone();
 
-                
+                // Especificar tamaño en el eje horizontal
+                int cols = hori.Cols;
+                int horizontalSize = cols / div;
+
+                // Crear elemento estructural para extraer líneas horizontales a través de operaciones morfológicas
+                Mat horizontalStructure = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(horizontalSize, 1), new Point(-1, -1));
+
+                // Aplicar operaciones morfológicas
+                CvInvoke.Erode(hori, hori, horizontalStructure, new Point(-1, -1), 1, BorderType.Default, new MCvScalar());
+                CvInvoke.Dilate(hori, hori, horizontalStructure, new Point(-1, -1), 1, BorderType.Default, new MCvScalar());
 
                 // Especificar tamaño en el eje horizontal
                 int rows = hori.Rows;
@@ -780,16 +789,7 @@ namespace STI_Tool
                 CvInvoke.Erode(hori, hori, verticalStructure, new Point(-1, -1), 1, BorderType.Default, new MCvScalar());
                 CvInvoke.Dilate(hori, hori, verticalStructure, new Point(-1, -1), 1, BorderType.Default, new MCvScalar());
 
-                // Especificar tamaño en el eje horizontal
-                int cols = hori.Cols;
-                int horizontalSize = cols / div;
-
-                // Crear elemento estructural para extraer líneas horizontales a través de operaciones morfológicas
-                Mat horizontalStructure = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(horizontalSize, 1), new Point(-1, -1));
-
-                // Aplicar operaciones morfológicas
-                CvInvoke.Erode(hori, hori, horizontalStructure, new Point(-1, -1), 1, BorderType.Default, new MCvScalar());
-                CvInvoke.Dilate(hori, hori, horizontalStructure, new Point(-1, -1), 1, BorderType.Default, new MCvScalar());
+                
 
                 // Se extrae el ROI de la imagen binarizada
                 roiImage = ExtractROI(hori);
