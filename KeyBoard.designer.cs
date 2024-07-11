@@ -1,4 +1,4 @@
-﻿namespace STI_CoolingConveyorUpdated
+﻿namespace STI_Tool
 {
     partial class KeyBoard
     {

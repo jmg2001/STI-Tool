@@ -3,7 +3,7 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace STI_CoolingConveyorUpdated
+namespace STI_Tool
 {
     public partial class KeyBoard : MetroForm
     {

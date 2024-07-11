@@ -9,13 +9,15 @@ using Emgu.CV;
 using Emgu.CV.Util;
 using Emgu.CV.CvEnum;
 using System.Data;
-using STI_CoolingConveyorUpdated;
-using Emgu.CV.Cuda;
+
 
 namespace STI_Tool
 {
     public partial class STI : Form
     {
+        int line1 = 0;
+        int line2 = 0;
+
         int blobCounter = 1;
 
         bool diameter90Deg = true;
@@ -115,16 +117,17 @@ namespace STI_Tool
             sizes.Add("OVAL");
             sizes.Add("Oversize");
             sizes.Add("SHAPE");
+            sizes.Add("DOUBLE");
 
             if (units == "mm")
             {
-                initMaxDiameter = 165.1 / euFactor; //130mm
-                initMinDiameter = 139.7 / euFactor; //110mm
+                initMaxDiameter = 165.1 / euFactor; 
+                initMinDiameter = 139.7 / euFactor; 
             }
             else
             {
-                initMaxDiameter = 5 / euFactor; //5inch
-                initMinDiameter = 3 / euFactor; //3inch
+                initMaxDiameter = 6.5 / euFactor; 
+                initMinDiameter = 5.5 / euFactor; 
             }
 
             maxDiameter = initMaxDiameter;
@@ -137,6 +140,10 @@ namespace STI_Tool
             pbROI.Visible = false;
             pbROI.SendToBack();
 
+            int offset = (int)(UserROI.GetWidth()/3);
+            line1 = UserROI.Left + offset;
+            line2 = line1 + offset;
+
             InitControls();
         }
 
@@ -148,17 +155,17 @@ namespace STI_Tool
                 // Crea un nuevo archivo y escribe los encabezados
                 using (StreamWriter sw = new StreamWriter(configPath + csvFilePath, false))
                 {
-                    sw.WriteLine("ID,Number,Class,Compacity,Ovality,Max Diameter,Min Diameter 90°,Real Min Diameter,Avg Diameter"); // Escribe los encabezados
+                    sw.WriteLine("ID,Number,Row,Class,Compacity,Ovality,Max Diameter,Min Diameter,Avg Diameter, SEQ"); // Escribe los encabezados
                 }
             }
         }
 
-        private void AddLineToCsv(string ID, string Class,string compactness,string maxDiameter, string minDiameter, string avgDiameter, string ovality)
+        private void AddLineToCsv(string row, string Class,string compactness,string maxDiameter, string minDiameter, string avgDiameter, string ovality, string number, string SEQ)
         {
             // Agrega una nueva línea al archivo CSV
             using (StreamWriter sw = new StreamWriter(configPath + csvFilePath, true))
             {
-                sw.WriteLine($"{blobCounter},{ID},,{compactness},{ovality},{maxDiameter},{minDiameter},{avgDiameter}");
+                sw.WriteLine($"{blobCounter},{number},{row},{Class},{compactness},{ovality},{maxDiameter},{minDiameter},{avgDiameter},{SEQ}");
             }
 
             blobCounter++;
@@ -289,6 +296,17 @@ namespace STI_Tool
                 btnDiameters90Deg.BackColor = Color.Silver;
             }
 
+            if (units == "mm")
+            {
+                btnMm.BackColor = Color.LightGreen;
+                btnInch.BackColor = Color.Silver;
+            }
+            else
+            {
+                btnMm.BackColor = Color.Silver;
+                btnInch.BackColor = Color.LightGreen;
+            }
+
             btnProcess.Enabled = false;
             btnProcess.BackColor = Color.DarkGray;
 
@@ -352,6 +370,7 @@ namespace STI_Tool
         private void ReadImages()
         {
             imagesPaths.Clear();
+            cmbActualImage.Items.Clear();
 
             string[] imageFiles = Directory.GetFiles(folderPath, "*.jpg")
                                 .Concat(Directory.GetFiles(folderPath, "*.bmp"))
@@ -359,8 +378,6 @@ namespace STI_Tool
 
             if (imageFiles.Length > 0)
             {
-                cmbActualImage.Items.Clear();
-
                 foreach (string imageFile in imageFiles.OrderBy(file => file))
                 {
                     imagesPaths.Add(imageFile);
@@ -378,13 +395,19 @@ namespace STI_Tool
                 pbMain.LoadAsync();
 
             }
+            else
+            {
+                cmbActualImage.Items.Add("No Images Found");
+                cmbActualImage.SelectedItem = "No Images Found";
+                txtImageSize.Text = "";
+            }
         }
 
         private void btnNextImage_Click(object sender, EventArgs e)
         {
             int index = imagesPaths.IndexOf(actualImagePath);
 
-            if (index != imagesPaths.Count-1)
+            if (index != -1 && index != imagesPaths.Count-1)
             {
                 actualImagePath = imagesPaths[index + 1];
                 cmbActualImage.SelectedItem = actualImagePath.Split('\\')[actualImagePath.Split('\\').Length - 1];
@@ -403,7 +426,7 @@ namespace STI_Tool
         {
             int index = imagesPaths.IndexOf(actualImagePath);
 
-            if (index != 0)
+            if (index != 0 && index != -1)
             {
                 actualImagePath = imagesPaths[index - 1];
                 cmbActualImage.SelectedItem = actualImagePath.Split('\\')[actualImagePath.Split('\\').Length - 1];
@@ -422,30 +445,34 @@ namespace STI_Tool
         {
             string selection = cmbActualImage.SelectedItem.ToString();
 
-            actualImagePath = actualImagePath.Replace(actualImagePath.Split('\\')[actualImagePath.Split('\\').Length - 1], selection);
-
-            settings.ActualImagePath = actualImagePath;
-            settings.Save();
-
-            pbROI.Visible = false;
-
-            pbMain.ImageLocation = actualImagePath;
-            pbMain.Load();
-
-            txtImageSize.Text = pbMain.Image.Size.ToString();
-            if (pbMain.Image.Width == 1280)
+            if (selection != "No Images Found")
             {
-                ChangeROI(1280);
-                rbtMonoCamera.Checked = true;
-            }
-            else if (pbMain.Image.Width == 640)
-            {
-                ChangeROI(640);
-                rbtThermoCamera.Checked = true;
-            }
+                actualImagePath = actualImagePath.Replace(actualImagePath.Split('\\')[actualImagePath.Split('\\').Length - 1], selection);
 
-            imageWidth = pbMain.Image.Width;
-            imageHeight = pbMain.Image.Height;
+                settings.ActualImagePath = actualImagePath;
+                settings.Save();
+
+                pbROI.Visible = false;
+
+                pbMain.ImageLocation = actualImagePath;
+                pbMain.Load();
+
+                txtImageSize.Text = pbMain.Image.Size.ToString();
+                if (pbMain.Image.Width == 1280)
+                {
+                    ChangeROI(1280);
+                    rbtMonoCamera.Checked = true;
+                }
+                else if (pbMain.Image.Width == 640)
+                {
+                    ChangeROI(640);
+                    rbtThermoCamera.Checked = true;
+                }
+
+                imageWidth = pbMain.Image.Width;
+                imageHeight = pbMain.Image.Height;
+            }
+            
         }
 
         private void ResizeTextBoxToFitText(System.Windows.Forms.TextBox textBox)
@@ -468,21 +495,25 @@ namespace STI_Tool
 
         private void btnPreProcess_Click(object sender, EventArgs e)
         {
-            pbROI.Visible = false;
+            PreProcess();
+        }
 
+        private bool PreProcess()
+        {
+            pbROI.Visible = false;
 
             using (Bitmap originalImage = new Bitmap(actualImagePath))
             {
                 if (!(originalImage.Size == new Size(640, 480)) && !(originalImage.Size == new Size(1280, 960)))
                 {
                     MessageBox.Show("Use a image with the size (640,480) or (1280,960)");
-                    return;
+                    return false;
                 }
 
                 if (originalImage.PixelFormat != System.Drawing.Imaging.PixelFormat.Format8bppIndexed)
                 {
                     MessageBox.Show("Use a image with the correct color format");
-                    return;
+                    return false;
                     //Cargar la imagen original
                     //Mat originalImage2 = CvInvoke.Imread(actualImagePath, ImreadModes.Color);
 
@@ -495,12 +526,12 @@ namespace STI_Tool
                     //return;
                 }
 
-
                 // Convertir el objeto Bitmap a una matriz de Emgu CV (Image<Bgr, byte>)
                 Image<Bgr, byte> tempImage = originalImage.ToImage<Bgr, byte>();
-                ImageHistogram(originalImage);
 
-                if (imageCorrection) 
+                ImageHistogram(tempImage.ToBitmap());
+
+                if (imageCorrection)
                 {
                     originalImageCV = ImageCorrection(tempImage);
                 }
@@ -508,6 +539,8 @@ namespace STI_Tool
                 {
                     originalImageCV = tempImage.Mat;
                 }
+
+                //originalImageCV = RotateImage(originalImageCV.ToImage<Bgr, byte>(), 180).Mat;
 
                 //CvInvoke.MedianBlur(originalImageCV, originalImageCV, 5);
 
@@ -523,7 +556,8 @@ namespace STI_Tool
 
                 temp.Dispose();
             }
-            else{
+            else
+            {
                 originalImageCV.Save(imagesPath + "roiDraw.bmp");
             }
 
@@ -532,6 +566,15 @@ namespace STI_Tool
 
             btnProcess.Enabled = true;
             btnProcess.BackColor = Color.Silver;
+
+            return true;
+        }
+
+        private Mat RotateImage(Mat img)
+        {
+            CvInvoke.Rotate(img, img, RotateFlags.Rotate90Clockwise);
+
+            return img;
         }
 
         private Mat DrawROI(Mat image)
@@ -744,6 +787,11 @@ namespace STI_Tool
 
         private void btnProcess_Click(object sender, EventArgs e)
         {
+            Process();
+        }
+
+        private void Process()
+        {
             Mat binarizedImage = new Mat();
 
             // Se binariza la imagen
@@ -789,7 +837,7 @@ namespace STI_Tool
                 CvInvoke.Erode(hori, hori, verticalStructure, new Point(-1, -1), 1, BorderType.Default, new MCvScalar());
                 CvInvoke.Dilate(hori, hori, verticalStructure, new Point(-1, -1), 1, BorderType.Default, new MCvScalar());
 
-                
+
 
                 // Se extrae el ROI de la imagen binarizada
                 roiImage = ExtractROI(hori);
@@ -869,16 +917,18 @@ namespace STI_Tool
 
                     double ovalidad = CalculateOvality(maxDiameter, minDiameter);
 
-                    ushort size = CalculateSize(maxDiameter, minDiameter, compactness, ovalidad, hole);
+                    ushort size = CalculateSize(maxDiameter, minDiameter, compactness, ovalidad, hole, area);
 
                     // Agregamos los datos a la tabla
                     // dataTable.Rows.Add(sector, area, Math.Round(diametroIA * tempFactor, 3), Math.Round(diameterTriangles * tempFactor, 3), Math.Round(maxDiameter * tempFactor, 3), Math.Round(minDiameter * tempFactor, 3), Math.Round(compactness, 3), Math.Round(ovalidad, 3));
 
+                    int row = CalculateRow(centro);
+
                     Blob blob = new Blob((double)area, perimeter, contours[i], diameterTriangles, diametroIA, centro, maxDiameter, minDiameter, sector, compactness, size, ovalidad, hole);
 
-                    AddLineToCsv((blob.Sector).ToString(), sizes[size], compactness.ToString(), ((blob.DMayor * euFactor)/25.4).ToString(), ((blob.DMenor * euFactor)/25.4).ToString(), ((blob.Diametro * euFactor)/25.4).ToString(),blob.Ovalidad.ToString());
+                    AddLineToCsv(row.ToString(), sizes[size], compactness.ToString(), (maxDiameter * euFactor).ToString(), (minDiameter * euFactor).ToString(),(diameterTriangles*euFactor).ToString(),ovalidad.ToString(),sec.ToString(),(diametroIA*euFactor).ToString()) ;
 
-                    if (size != 6) // Shape
+                    if (size != 6 && size != 7) // Shape
                     {
                         if (maxDiameter > MaxD)
                         {
@@ -907,7 +957,7 @@ namespace STI_Tool
                             DrawCenter(centro, 2, image);
 
                             // Dibujamos el sector
-                            DrawNumber(image, centro, sec);
+                            DrawNumber(image, centro, sec, size);
 
                             // Dibujamos el numero del sector
                             //drawSectorNumber(image, centro, sector - 1);
@@ -977,7 +1027,7 @@ namespace STI_Tool
 
             double cv = CalculateCV(diametersCV);
 
-            int validObjects = Blobs.Count(Blob => Blob.Size != 6);
+            int validObjects = Blobs.Count(Blob => Blob.Size != 6 && Blob.Size != 7);
             lblValidObjects.Text = validObjects.ToString();
 
             if (validObjects >= minBlobObjects)
@@ -1020,8 +1070,8 @@ namespace STI_Tool
             {
                 // Asignamos el texto del promedio de los diametros
                 lblAvgDiameter.Text = Math.Round(avgD, nUnitsInch).ToString();
-                lblMaxDiameter.Text = Math.Round(MaxD, nUnitsInch).ToString();
-                lblMinDiameter.Text = Math.Round(MinD, nUnitsInch).ToString();
+                lblMaxDiameter.Text = Math.Round(MaxD * euFactor, nUnitsInch).ToString();
+                lblMinDiameter.Text = Math.Round(MinD * euFactor, nUnitsInch).ToString();
                 lblSEQDiameter.Text = Math.Round(avgDIA * euFactor, nUnitsInch).ToString();
                 dplControlDiameter.Text = Math.Round(controlDiameter * euFactor, nUnitsInch).ToString();
                 dplControlDiameter.Text = Math.Round(controlDiameter * euFactor, nUnitsInch).ToString();
@@ -1037,6 +1087,22 @@ namespace STI_Tool
 
             // Asignar la DataTable al DataGridView
             dataGridView1.DataSource = dataTable;
+        }
+
+        private int CalculateRow(Point centro)
+        {
+            int x = centro.X;
+            if (x >= UserROI.Left && x < line1)
+            {
+                return (1);
+            }else if(x >= line1 && x < line2)
+            {
+                return (2);
+            }
+            else
+            {
+                return 3;
+            }
         }
 
         private void CheckLastFrames()
@@ -1170,17 +1236,25 @@ namespace STI_Tool
             holesQueue.Enqueue(holes);
         }
 
-        private void DrawNumber(Mat image, Point centro, int n)
+        private void DrawNumber(Mat image, Point centro, int n, int size)
         {
+            MCvScalar brush = new MCvScalar(255, 255, 255);
+            if (size != 6 && size != 7)
+            {
+                brush = new MCvScalar(0, 102, 0);
+            }
+            else
+            {
+                brush = new MCvScalar(0, 0, 255);
+            }
+
             if (imageWidth == 1280)
             {
-                MCvScalar brush = new MCvScalar(0, 0, 255);
                 Point punto = new Point(centro.X - 10, centro.Y - 10);
                 CvInvoke.PutText(image, n.ToString(), punto, FontFace.HersheySimplex, 1, brush, 2);
             }
             else
             {
-                MCvScalar brush = new MCvScalar(0, 0, 255);
                 Point punto = new Point(centro.X - 10, centro.Y - 10);
                 CvInvoke.PutText(image, n.ToString(), punto, FontFace.HersheySimplex, 0.5, brush, 1);
             }
@@ -1225,24 +1299,33 @@ namespace STI_Tool
             return ovality;
         }
 
-        private ushort CalculateSize(double dMayor, double dMenor, double compacidad, double ovalidad, bool hole)
+        private ushort CalculateSize(double dMayor, double dMenor, double compacidad, double ovalidad, bool hole, int area)
         {
             ushort size = 1; // Normal
             double maxOvality = maxDiameter / minDiameter;
+            double avg = (dMayor+dMenor)/2;
+            int normalArea = (int)((Math.PI*Math.Pow(((maxDiameter + minDiameter) / 2), 2))/4);
 
             if (hole && compacidad > maxCompactnessHole || (!hole && compacidad > maxCompactness))
             {
-                size = 6; // Shape
+                if (ovalidad > maxOvality && area > normalArea * 1.4)
+                {
+                    size = 7; // Double
+                }
+                else
+                {
+                    size = 6; // Shape
+                }
             }
             else if (ovalidad > maxOvality)
             {
                 size = 4; // Oval
             }
-            else if (dMayor > maxDiameter)
+            else if (avg > maxDiameter)
             {
                 size = 2; // Big
             }
-            else if (dMenor < minDiameter)
+            else if (avg < minDiameter)
             {
                 size = 3; // Small
             }
@@ -1382,7 +1465,7 @@ namespace STI_Tool
 
             }
 
-            
+            diameter = (maxDiameter + minDiameter) / 2;
             return (diameter, maxDiameter, minDiameter);
         }
 
@@ -2038,7 +2121,7 @@ namespace STI_Tool
 
         }
 
-        private void updateUnits(string unitsNew)
+        private void UpdateUnits(string unitsNew)
         {
             float fact = 0;
             if (units != unitsNew)
@@ -2046,10 +2129,9 @@ namespace STI_Tool
                 units = unitsNew;
                 lblMaxDiameterUnits.Text = units;
                 lblMinDiameterUnits.Text = units;
-
                 txtAvgDiameterUnits.Text = units;
-                txtAvgMaxDiameterUnits.Text = units;
-                txtAvgMinDiameterUnits.Text = units;
+                txtMaxDiameterUnits.Text = units;
+                txtMinDiameterUnits.Text = units;
                 txtControlDiameterUnits.Text = units;
                 txtEquivalentDiameterUnits.Text = units;
 
@@ -2084,76 +2166,76 @@ namespace STI_Tool
                 if (unitsNew == "inch")
                 {
                     double avgDiameter = 0;
-                    if (Double.TryParse(lblAvgDiameter.Text, out avgDiameter)) ;
+                    Double.TryParse(lblAvgDiameter.Text, out avgDiameter);
                     avgDiameter *= fact;
                     lblAvgDiameter.Text = Math.Round(avgDiameter, nUnitsInch).ToString();
 
 
                     double mxDiameter = 0;
-                    if (Double.TryParse(lblMaxDiameter.Text, out mxDiameter)) ;
+                    Double.TryParse(lblMaxDiameter.Text, out mxDiameter);
                     mxDiameter *= fact;
                     lblMaxDiameter.Text = Math.Round(mxDiameter, nUnitsInch).ToString();
 
                     double mnDiameter = 0;
-                    if (Double.TryParse(lblMinDiameter.Text, out mnDiameter)) ;
+                    Double.TryParse(lblMinDiameter.Text, out mnDiameter);
                     mnDiameter *= fact;
                     lblMinDiameter.Text = Math.Round(mnDiameter, nUnitsInch).ToString();
 
 
                     double controlDiameter = 0;
-                    if (Double.TryParse(dplControlDiameter.Text, out controlDiameter)) ;
+                    Double.TryParse(dplControlDiameter.Text, out controlDiameter);
                     controlDiameter *= fact;
                     dplControlDiameter.Text = Math.Round(controlDiameter, nUnitsInch).ToString();
 
                     double avgMinDiameter = 0;
-                    if (Double.TryParse(txtMinDiameter.Text, out avgMinDiameter)) ;
+                    Double.TryParse(txtMinDiameter.Text, out avgMinDiameter);
                     avgMinDiameter *= fact;
                     txtMinDiameter.Text = Math.Round(avgMinDiameter, nUnitsInch).ToString();
 
                     double avgMaxDiameter = 0;
-                    if (Double.TryParse(txtMaxDiameter.Text, out avgMaxDiameter)) ;
+                    Double.TryParse(txtMaxDiameter.Text, out avgMaxDiameter);
                     avgMaxDiameter *= fact;
                     txtMaxDiameter.Text = Math.Round(avgMaxDiameter, nUnitsInch).ToString();
 
                     double equivalentDiameter = 0;
-                    if (Double.TryParse(lblSEQDiameter.Text, out equivalentDiameter)) ;
+                    Double.TryParse(lblSEQDiameter.Text, out equivalentDiameter);
                     equivalentDiameter *= fact;
                     lblSEQDiameter.Text = Math.Round(equivalentDiameter, nUnitsInch).ToString();
                 }
                 else
                 {
                     double avgDiameter = 0;
-                    if (Double.TryParse(lblAvgDiameter.Text, out avgDiameter)) ;
+                    Double.TryParse(lblAvgDiameter.Text, out avgDiameter);
                     avgDiameter *= fact;
                     lblAvgDiameter.Text = Math.Round(avgDiameter, nUnitsMm).ToString();
 
                     double mxDiameter = 0;
-                    if (Double.TryParse(txtMaxDiameter.Text, out mxDiameter)) ;
+                    Double.TryParse(txtMaxDiameter.Text, out mxDiameter);
                     mxDiameter *= fact;
                     txtMaxDiameter.Text = Math.Round(mxDiameter, nUnitsMm).ToString();
 
                     double mnDiameter = 0;
-                    if (Double.TryParse(txtMinDiameter.Text, out mnDiameter)) ;
+                    Double.TryParse(txtMinDiameter.Text, out mnDiameter);
                     mnDiameter *= fact;
                     txtMinDiameter.Text = Math.Round(mnDiameter, nUnitsMm).ToString();
 
                     double controlDiameter = 0;
-                    if (Double.TryParse(dplControlDiameter.Text, out controlDiameter)) ;
+                    Double.TryParse(dplControlDiameter.Text, out controlDiameter);
                     controlDiameter *= fact;
                     dplControlDiameter.Text = Math.Round(controlDiameter, nUnitsMm).ToString();
 
                     double avgMinDiameter = 0;
-                    if (Double.TryParse(lblMinDiameter.Text, out avgMinDiameter)) ;
+                    Double.TryParse(lblMinDiameter.Text, out avgMinDiameter);
                     avgMinDiameter *= fact;
                     lblMinDiameter.Text = Math.Round(avgMinDiameter, nUnitsMm).ToString();
 
                     double avgMaxDiameter = 0;
-                    if (Double.TryParse(lblMaxDiameter.Text, out avgMaxDiameter)) ;
+                    Double.TryParse(lblMaxDiameter.Text, out avgMaxDiameter);
                     avgMaxDiameter *= fact;
                     lblMaxDiameter.Text = Math.Round(avgMaxDiameter, nUnitsMm).ToString();
 
                     double equivalentDiameter = 0;
-                    if (Double.TryParse(lblSEQDiameter.Text, out equivalentDiameter)) ;
+                    Double.TryParse(lblSEQDiameter.Text, out equivalentDiameter);
                     equivalentDiameter *= fact;
                     lblSEQDiameter.Text = Math.Round(equivalentDiameter, nUnitsMm).ToString();
                 }
@@ -2228,6 +2310,38 @@ namespace STI_Tool
             {
                 btnDiameters90Deg.BackColor = Color.Silver;
             }
+        }
+
+        private void btnFullProcess_Click(object sender, EventArgs e)
+        {
+            bool preProccessed = PreProcess();
+
+            if (preProccessed) Process();
+        }
+
+        private void btnMm_Click(object sender, EventArgs e)
+        {
+            btnMm.BackColor = Color.LightGreen;
+            btnInch.BackColor = Color.Silver;
+            UpdateUnits("mm");
+        }
+
+        private void btnInch_Click(object sender, EventArgs e)
+        {
+            btnMm.BackColor = Color.Silver;
+            btnInch.BackColor = Color.LightGreen;
+            UpdateUnits("inch");
+
+        }
+
+        private void toolTip1_Popup(object sender, PopupEventArgs e)
+        {
+
+        }
+
+        private void SaveImageToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
